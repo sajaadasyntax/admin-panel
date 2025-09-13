@@ -1,103 +1,208 @@
-import Image from "next/image";
+'use client'
 
-export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/contexts/AuthContext'
+import { Layout } from '@/components/layout/Layout'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Users, MapPin, Square, Home, DollarSign } from 'lucide-react'
+import api from '@/lib/api'
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+interface DashboardStats {
+  totalUsers: number
+  totalNeighborhoods: number
+  totalSquares: number
+  totalHouses: number
+  paidHouses: number
+  unpaidHouses: number
+  totalRevenue: number
+}
+
+export default function Dashboard() {
+  const { user, loading } = useAuth()
+  const router = useRouter()
+  const [stats, setStats] = useState<DashboardStats | null>(null)
+  const [loadingStats, setLoadingStats] = useState(true)
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login')
+    }
+  }, [user, loading, router])
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const [usersRes, neighborhoodsRes, squaresRes, housesRes] = await Promise.all([
+          api.get('/api/users'),
+          api.get('/api/neighborhoods'),
+          api.get('/api/squares'),
+          api.get('/api/houses'),
+        ])
+
+        const houses = housesRes.data
+        const paidHouses = houses.filter((house: any) => house.hasPaid).length
+        const unpaidHouses = houses.length - paidHouses
+
+        setStats({
+          totalUsers: usersRes.data.length,
+          totalNeighborhoods: neighborhoodsRes.data.length,
+          totalSquares: squaresRes.data.length,
+          totalHouses: houses.length,
+          paidHouses,
+          unpaidHouses,
+          totalRevenue: paidHouses * 5000, // Assuming average payment
+        })
+      } catch (error) {
+        console.error('Error fetching stats:', error)
+      } finally {
+        setLoadingStats(false)
+      }
+    }
+
+    if (user) {
+      fetchStats()
+    }
+  }, [user])
+
+  if (loading || !user) {
+    return null
+  }
+
+  if (loadingStats) {
+    return (
+      <Layout>
+        <div className="p-6">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-32 bg-gray-200 rounded"></div>
+              ))}
+            </div>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+      </Layout>
+    )
+  }
+
+  const statCards = [
+    {
+      title: 'إجمالي المستخدمين',
+      value: stats?.totalUsers || 0,
+      icon: Users,
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-50',
+    },
+    {
+      title: 'إجمالي الأحياء',
+      value: stats?.totalNeighborhoods || 0,
+      icon: MapPin,
+      color: 'text-green-600',
+      bgColor: 'bg-green-50',
+    },
+    {
+      title: 'إجمالي المربعات',
+      value: stats?.totalSquares || 0,
+      icon: Square,
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-50',
+    },
+    {
+      title: 'إجمالي المنازل',
+      value: stats?.totalHouses || 0,
+      icon: Home,
+      color: 'text-orange-600',
+      bgColor: 'bg-orange-50',
+    },
+  ]
+
+  return (
+    <Layout>
+      <div className="p-6">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">لوحة التحكم</h1>
+          <p className="text-gray-600 mt-2">نظرة عامة على نظام إدارة المياه</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {statCards.map((stat, index) => (
+            <Card key={index}>
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className={`p-3 rounded-lg ${stat.bgColor}`}>
+                    <stat.icon className={`h-6 w-6 ${stat.color}`} />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">{stat.title}</p>
+                    <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>حالة الدفع</CardTitle>
+              <CardDescription>إحصائيات دفع الفواتير</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-gray-600">المنازل المدفوعة</span>
+                  <span className="text-lg font-bold text-green-600">{stats?.paidHouses || 0}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-gray-600">المنازل غير المدفوعة</span>
+                  <span className="text-lg font-bold text-red-600">{stats?.unpaidHouses || 0}</span>
+                </div>
+                <div className="pt-4 border-t">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-gray-600">إجمالي الإيرادات</span>
+                    <span className="text-lg font-bold text-blue-600">
+                      {stats?.totalRevenue?.toLocaleString()} جنيه
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>معلومات النظام</CardTitle>
+              <CardDescription>تفاصيل النظام الحالي</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-gray-600">نسبة الدفع</span>
+                  <span className="text-lg font-bold text-blue-600">
+                    {stats?.totalHouses ? Math.round((stats.paidHouses / stats.totalHouses) * 100) : 0}%
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-gray-600">متوسط الدفع</span>
+                  <span className="text-lg font-bold text-green-600">
+                    {stats?.paidHouses ? Math.round(stats.totalRevenue / stats.paidHouses) : 0} جنيه
+                  </span>
+                </div>
+                <div className="pt-4 border-t">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-gray-600">آخر تحديث</span>
+                    <span className="text-sm text-gray-500">
+                      {new Date().toLocaleDateString('ar-SD')}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </Layout>
+  )
 }

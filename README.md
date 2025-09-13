@@ -1,36 +1,129 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# لوحة إدارة نظام المياه
 
-## Getting Started
+لوحة إدارة شاملة لنظام إدارة فواتير المياه، مبنية باستخدام Next.js و TypeScript.
 
-First, run the development server:
+## المميزات
 
+### إدارة المستخدمين
+- عرض جميع المستخدمين
+- إضافة مستخدمين جدد
+- تعديل بيانات المستخدمين
+- حذف المستخدمين
+
+### إدارة الأحياء والمربعات
+- إدارة الأحياء (إضافة، تعديل، حذف)
+- إدارة المربعات (إضافة، تعديل، حذف)
+- ربط المربعات بالأحياء
+- تصدير بيانات المربعات إلى Excel
+
+### إدارة المنازل
+- عرض جميع المنازل مع تفاصيلها
+- إضافة منازل جديدة
+- تعديل بيانات المنازل
+- حذف المنازل
+- تتبع حالة الدفع
+
+### إدارة أنواع الدفع
+- تعديل مبالغ أنواع الدفع الثلاثة:
+  - عداد صغير (5000 جنيه)
+  - عداد متوسط (10000 جنيه)
+  - عداد كبير (15000 جنيه)
+
+### لوحة التحكم
+- إحصائيات شاملة للنظام
+- عرض حالة الدفع
+- إجمالي الإيرادات
+- نسب الإنجاز
+
+## التقنيات المستخدمة
+
+- **Next.js 15** - إطار عمل React
+- **TypeScript** - لغة البرمجة
+- **Tailwind CSS** - للتصميم
+- **Prisma** - لإدارة قاعدة البيانات
+- **Axios** - لطلبات API
+- **React Hook Form** - لإدارة النماذج
+- **Zod** - للتحقق من صحة البيانات
+- **Lucide React** - للأيقونات
+- **Radix UI** - لمكونات الواجهة
+- **XLSX** - لتصدير Excel
+
+## التثبيت والتشغيل
+
+### المتطلبات
+- Node.js 18+
+- npm أو yarn
+- قاعدة بيانات PostgreSQL
+
+### خطوات التثبيت
+
+1. **تثبيت التبعيات:**
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. **إعداد متغيرات البيئة:**
+```bash
+cp .env.example .env.local
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. **تعديل ملف .env.local:**
+```env
+DATABASE_URL="postgresql://username:password@localhost:5432/watergb"
+DIRECT_URL="postgresql://username:password@localhost:5432/watergb"
+JWT_SECRET="your-jwt-secret-key"
+NEXT_PUBLIC_API_URL="http://localhost:3001"
+ADMIN_USERNAME="admin"
+ADMIN_PASSWORD="admin123"
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. **إعداد قاعدة البيانات:**
+```bash
+npx prisma generate
+npx prisma db push
+```
 
-## Learn More
+5. **تشغيل الخادم:**
+```bash
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+6. **فتح المتصفح:**
+```
+http://localhost:3000
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## الاستخدام
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### تسجيل الدخول
+- استخدم بيانات المدير الافتراضية:
+  - اسم المستخدم: `admin`
+  - كلمة المرور: `admin123`
 
-## Deploy on Vercel
+### التنقل
+- **لوحة التحكم**: نظرة عامة على النظام
+- **المستخدمين**: إدارة المستخدمين
+- **الأحياء**: إدارة الأحياء
+- **المربعات**: إدارة المربعات مع إمكانية التصدير
+- **المنازل**: إدارة المنازل
+- **أنواع الدفع**: تعديل مبالغ الدفع
+- **الإعدادات**: إعدادات النظام
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### تصدير البيانات
+- يمكن تصدير بيانات المربعات إلى ملف Excel
+- يتضمن التصدير: اسم المربع، الحي، عدد المنازل، حالة الدفع، الإيرادات
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## الأمان
+
+- مصادقة JWT للمستخدمين
+- تشفير كلمات المرور
+- حماية من CSRF
+- التحقق من صحة البيانات
+
+## الدعم
+
+للحصول على الدعم أو الإبلاغ عن مشاكل، يرجى التواصل مع فريق التطوير.
+
+## الترخيص
+
+هذا المشروع مرخص تحت رخصة MIT.
