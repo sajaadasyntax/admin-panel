@@ -1,6 +1,7 @@
 export interface User {
   id: string
   username: string
+  role: 'ADMIN' | 'MOBILE_USER'
   createdAt: string
   updatedAt: string
 }
@@ -82,4 +83,5 @@ export interface AuthResponse {
   token: string
   userId: string
   username: string
+  role: 'ADMIN' | 'MOBILE_USER'
 }
