@@ -20,7 +20,7 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-// Handle auth errors
+// Handle auth errors and API errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -29,6 +29,9 @@ api.interceptors.response.use(
         localStorage.removeItem('admin_token')
         window.location.href = '/login'
       }
+    } else if (error.response?.status === 404) {
+      console.error('API endpoint not found:', error.config?.url)
+      // You might want to show a user-friendly message here
     }
     return Promise.reject(error)
   }

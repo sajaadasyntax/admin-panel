@@ -18,26 +18,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('admin_token')
-      if (token) {
-        // Verify token and get user info
-        api.get('/api/me')
-          .then(response => {
+    const checkAuth = async () => {
+      if (typeof window !== 'undefined') {
+        const token = localStorage.getItem('admin_token')
+        if (token) {
+          try {
+            // Verify token and get user info
+            const response = await api.get('/api/me')
             setUser(response.data)
-          })
-          .catch(() => {
+          } catch (error) {
             localStorage.removeItem('admin_token')
-          })
-          .finally(() => {
-            setLoading(false)
-          })
-      } else {
-        setLoading(false)
+          }
+        }
       }
-    } else {
       setLoading(false)
     }
+    
+    checkAuth()
   }, [])
 
   const login = async (credentials: LoginCredentials) => {
@@ -50,6 +47,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       setUser({ id: userId, username, createdAt: '', updatedAt: '' })
     } catch (error) {
+      console.error('Login error:', error)
       throw error
     }
   }
