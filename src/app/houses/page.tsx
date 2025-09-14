@@ -561,7 +561,7 @@ export default function HousesPage() {
                           {house.hasPaid ? 'مدفوع' : 'غير مدفوع'}
                         </span>
                         {house.receiptImage && (
-                          <ImageIcon className="h-4 w-4 text-blue-600 mr-2" title="يوجد إيصال" />
+                          <ImageIcon className="h-4 w-4 text-blue-600 mr-2" />
                         )}
                       </div>
                     </div>
