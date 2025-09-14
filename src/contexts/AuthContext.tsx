@@ -41,12 +41,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (credentials: LoginCredentials) => {
     try {
       const response = await api.post<AuthResponse>('/api/login', credentials)
-      const { token, userId, username } = response.data
+      const { token, userId, username, role } = response.data
       
       if (typeof window !== 'undefined') {
         localStorage.setItem('admin_token', token)
       }
-      setUser({ id: userId, username, createdAt: '', updatedAt: '' })
+      setUser({ id: userId, username, role, createdAt: '', updatedAt: '' })
     } catch (error) {
       console.error('Login error:', error)
       throw error
@@ -60,8 +60,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null)
   }
 
+  const isAdmin = user?.role === 'ADMIN'
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, logout, loading, isAdmin }}>
       {children}
     </AuthContext.Provider>
   )

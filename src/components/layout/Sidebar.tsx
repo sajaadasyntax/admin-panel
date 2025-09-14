@@ -11,7 +11,8 @@ import {
   Settings,
   DollarSign,
   BarChart3,
-  LogOut
+  LogOut,
+  CreditCard
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -22,6 +23,7 @@ const navigation = [
   { name: 'المربعات', href: '/squares', icon: Square },
   { name: 'المنازل', href: '/houses', icon: Home },
   { name: 'أنواع الدفع', href: '/payment-types', icon: DollarSign },
+  { name: 'الفواتير الشهرية', href: '/billing', icon: CreditCard },
   { name: 'الإعدادات', href: '/settings', icon: Settings },
 ]
 

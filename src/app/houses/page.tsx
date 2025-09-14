@@ -22,6 +22,12 @@ export default function HousesPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingHouse, setEditingHouse] = useState<House | null>(null)
+  const [filters, setFilters] = useState({
+    squareId: '',
+    neighborhoodId: '',
+    paymentStatus: '', // 'paid', 'unpaid', or ''
+    isOccupied: '' // 'occupied', 'vacant', or ''
+  })
   const [formData, setFormData] = useState({
     houseNumber: '',
     ownerName: '',
@@ -132,13 +138,33 @@ export default function HousesPage() {
     }
   }
 
-  const filteredHouses = houses.filter(house =>
-    house.houseNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    house.ownerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    house.ownerPhone.includes(searchTerm) ||
-    house.square?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    house.square?.neighborhood?.name.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const filteredHouses = houses.filter(house => {
+    // Text search
+    const matchesSearch = searchTerm === '' || 
+      house.houseNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      house.ownerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      house.ownerPhone.includes(searchTerm) ||
+      house.square?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      house.square?.neighborhood?.name.toLowerCase().includes(searchTerm.toLowerCase())
+    
+    // Square filter
+    const matchesSquare = filters.squareId === '' || house.squareId === filters.squareId
+    
+    // Neighborhood filter
+    const matchesNeighborhood = filters.neighborhoodId === '' || house.square?.neighborhoodId === filters.neighborhoodId
+    
+    // Payment status filter
+    const matchesPaymentStatus = filters.paymentStatus === '' || 
+      (filters.paymentStatus === 'paid' && house.hasPaid) ||
+      (filters.paymentStatus === 'unpaid' && !house.hasPaid)
+    
+    // Occupancy filter
+    const matchesOccupancy = filters.isOccupied === '' ||
+      (filters.isOccupied === 'occupied' && house.isOccupied) ||
+      (filters.isOccupied === 'vacant' && !house.isOccupied)
+    
+    return matchesSearch && matchesSquare && matchesNeighborhood && matchesPaymentStatus && matchesOccupancy
+  })
 
   if (loading || !user) {
     return null
@@ -160,8 +186,9 @@ export default function HousesPage() {
           </div>
         </div>
 
-        {/* Search */}
-        <div className="mb-6">
+        {/* Search and Filters */}
+        <div className="mb-6 space-y-4">
+          {/* Search Bar */}
           <div className="relative">
             <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <Input
@@ -171,7 +198,129 @@ export default function HousesPage() {
               className="pr-10"
             />
           </div>
+
+          {/* Filters */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Neighborhood Filter */}
+            <div>
+              <Label htmlFor="neighborhoodFilter">الحي</Label>
+              <select
+                id="neighborhoodFilter"
+                value={filters.neighborhoodId}
+                onChange={(e) => setFilters({ ...filters, neighborhoodId: e.target.value, squareId: '' })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">جميع الأحياء</option>
+                {neighborhoods.map((neighborhood) => (
+                  <option key={neighborhood.id} value={neighborhood.id}>
+                    {neighborhood.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Square Filter */}
+            <div>
+              <Label htmlFor="squareFilter">المربع</Label>
+              <select
+                id="squareFilter"
+                value={filters.squareId}
+                onChange={(e) => setFilters({ ...filters, squareId: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={!filters.neighborhoodId}
+              >
+                <option value="">جميع المربعات</option>
+                {squares
+                  .filter(square => !filters.neighborhoodId || square.neighborhoodId === filters.neighborhoodId)
+                  .map((square) => (
+                    <option key={square.id} value={square.id}>
+                      {square.name}
+                    </option>
+                  ))}
+              </select>
+            </div>
+
+            {/* Payment Status Filter */}
+            <div>
+              <Label htmlFor="paymentFilter">حالة الدفع</Label>
+              <select
+                id="paymentFilter"
+                value={filters.paymentStatus}
+                onChange={(e) => setFilters({ ...filters, paymentStatus: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">جميع الحالات</option>
+                <option value="paid">مدفوع</option>
+                <option value="unpaid">غير مدفوع</option>
+              </select>
+            </div>
+
+            {/* Occupancy Filter */}
+            <div>
+              <Label htmlFor="occupancyFilter">حالة السكن</Label>
+              <select
+                id="occupancyFilter"
+                value={filters.isOccupied}
+                onChange={(e) => setFilters({ ...filters, isOccupied: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">جميع الحالات</option>
+                <option value="occupied">مأهول</option>
+                <option value="vacant">شاغر</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Filter Summary and Clear */}
+          <div className="flex justify-between items-center">
+            <div className="text-sm text-gray-600">
+              عرض {filteredHouses.length} من أصل {houses.length} منزل
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setFilters({ squareId: '', neighborhoodId: '', paymentStatus: '', isOccupied: '' })}
+            >
+              مسح الفلاتر
+            </Button>
+          </div>
         </div>
+
+        {/* Statistics Summary */}
+        {filteredHouses.length > 0 && (
+          <div className="mb-6">
+            <Card>
+              <CardContent className="p-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                  <div>
+                    <div className="text-2xl font-bold text-blue-600">
+                      {filteredHouses.length}
+                    </div>
+                    <div className="text-sm text-gray-600">إجمالي المنازل</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-green-600">
+                      {filteredHouses.filter(h => h.hasPaid).length}
+                    </div>
+                    <div className="text-sm text-gray-600">مدفوع</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-red-600">
+                      {filteredHouses.filter(h => !h.hasPaid).length}
+                    </div>
+                    <div className="text-sm text-gray-600">غير مدفوع</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-purple-600">
+                      {filteredHouses.filter(h => h.isOccupied).length}
+                    </div>
+                    <div className="text-sm text-gray-600">مأهول</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Add/Edit Form */}
         {(showAddForm || editingHouse) && (
