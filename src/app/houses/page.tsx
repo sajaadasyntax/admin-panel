@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { House, Square, Neighborhood, PaymentType, PAYMENT_TYPES } from '@/types'
-import { Plus, Edit, Trash2, Search, Home, CheckCircle, XCircle } from 'lucide-react'
+import { Plus, Edit, Trash2, Search, Home, CheckCircle, XCircle, Image as ImageIcon, Eye } from 'lucide-react'
 import api from '@/lib/api'
 
 export default function HousesPage() {
@@ -22,6 +22,8 @@ export default function HousesPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingHouse, setEditingHouse] = useState<House | null>(null)
+  const [showReceiptModal, setShowReceiptModal] = useState(false)
+  const [selectedReceiptImage, setSelectedReceiptImage] = useState<string | null>(null)
   const [filters, setFilters] = useState({
     squareId: '',
     neighborhoodId: '',
@@ -136,6 +138,11 @@ export default function HousesPage() {
     } catch (error: any) {
       alert(error.response?.data?.message || 'حدث خطأ في حذف المنزل')
     }
+  }
+
+  const handleViewReceipt = (receiptImage: string) => {
+    setSelectedReceiptImage(receiptImage)
+    setShowReceiptModal(true)
   }
 
   const filteredHouses = houses.filter(house => {
@@ -553,6 +560,9 @@ export default function HousesPage() {
                         <span className={house.hasPaid ? 'text-green-600' : 'text-red-600'}>
                           {house.hasPaid ? 'مدفوع' : 'غير مدفوع'}
                         </span>
+                        {house.receiptImage && (
+                          <ImageIcon className="h-4 w-4 text-blue-600 mr-2" title="يوجد إيصال" />
+                        )}
                       </div>
                     </div>
                     <div className="flex justify-between items-center">
@@ -561,6 +571,21 @@ export default function HousesPage() {
                         {house.isOccupied ? 'مأهول' : 'غير مأهول'}
                       </span>
                     </div>
+                    {house.receiptImage && (
+                      <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-200">
+                        <span className="text-gray-600">صورة الإيصال:</span>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleViewReceipt(house.receiptImage!)}
+                          className="flex items-center gap-2"
+                        >
+                          <ImageIcon className="h-4 w-4" />
+                          <Eye className="h-4 w-4" />
+                          عرض الصورة
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -574,6 +599,30 @@ export default function HousesPage() {
           </div>
         )}
       </div>
+
+      {/* Receipt Image Modal */}
+      {showReceiptModal && selectedReceiptImage && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-4xl max-h-[90vh] overflow-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">صورة الإيصال</h3>
+              <Button
+                variant="outline"
+                onClick={() => setShowReceiptModal(false)}
+              >
+                إغلاق
+              </Button>
+            </div>
+            <div className="flex justify-center">
+              <img
+                src={selectedReceiptImage}
+                alt="صورة الإيصال"
+                className="max-w-full max-h-[70vh] object-contain rounded-lg shadow-lg"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   )
 }
