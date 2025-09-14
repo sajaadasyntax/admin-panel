@@ -574,16 +574,21 @@ export default function HousesPage() {
                     {house.receiptImage && (
                       <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-200">
                         <span className="text-gray-600">صورة الإيصال:</span>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleViewReceipt(house.receiptImage!)}
-                          className="flex items-center gap-2"
-                        >
-                          <ImageIcon className="h-4 w-4" />
-                          <Eye className="h-4 w-4" />
-                          عرض الصورة
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          {!house.receiptImage.startsWith('data:image/') && (
+                            <span className="text-xs text-orange-600">⚠️ محلي</span>
+                          )}
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleViewReceipt(house.receiptImage!)}
+                            className="flex items-center gap-2"
+                          >
+                            <ImageIcon className="h-4 w-4" />
+                            <Eye className="h-4 w-4" />
+                            عرض الصورة
+                          </Button>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -614,11 +619,26 @@ export default function HousesPage() {
               </Button>
             </div>
             <div className="flex justify-center">
-              <img
-                src={selectedReceiptImage}
-                alt="صورة الإيصال"
-                className="max-w-full max-h-[70vh] object-contain rounded-lg shadow-lg"
-              />
+              {selectedReceiptImage?.startsWith('data:image/') ? (
+                <img
+                  src={selectedReceiptImage}
+                  alt="صورة الإيصال"
+                  className="max-w-full max-h-[70vh] object-contain rounded-lg shadow-lg"
+                />
+              ) : (
+                <div className="text-center p-8">
+                  <div className="text-gray-500 mb-4">
+                    <ImageIcon className="h-16 w-16 mx-auto mb-2" />
+                    <p className="text-lg">لا يمكن عرض هذه الصورة</p>
+                    <p className="text-sm">الصورة محفوظة كمسار محلي ولا يمكن عرضها في المتصفح</p>
+                  </div>
+                  <div className="bg-gray-100 p-4 rounded-lg">
+                    <p className="text-sm text-gray-600 font-mono break-all">
+                      {selectedReceiptImage}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
